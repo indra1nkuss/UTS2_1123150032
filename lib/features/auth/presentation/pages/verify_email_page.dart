@@ -9,11 +9,14 @@ class VerifyEmailPage extends StatefulWidget {
 }
 
 class _VerifyEmailPageState extends State<VerifyEmailPage> {
+  late final AuthProvider _authProvider;
+
   @override
   void initState() {
     super.initState();
+    _authProvider = context.read<AuthProvider>();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AuthProvider>().startVerificationCheck(() {
+      _authProvider.startVerificationCheck(() {
         if (mounted) Navigator.pushReplacementNamed(context, '/dashboard');
       });
     });
@@ -21,7 +24,8 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
 
   @override
   void dispose() {
-    context.read<AuthProvider>().stopCheck();
+    // Memanggil stopCheck langsung dari referensi provider yang sudah disimpan
+    _authProvider.stopCheck();
     super.dispose();
   }
 

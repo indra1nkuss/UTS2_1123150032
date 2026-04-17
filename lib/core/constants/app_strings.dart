@@ -1,7 +1,7 @@
 class AppStrings {
   // App Info
-  static const String appName = 'Pasar Malam';
-  static const String appTagline = 'Marketplace Terpercaya';
+  static const String appName = 'RentBike';
+static const String appTagline = 'Sewa Sepeda Jadi Lebih Mudah';
   
   // Auth Titles
   static const String login = 'Masuk';
