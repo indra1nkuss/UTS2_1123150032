@@ -22,10 +22,19 @@ class LoginPage extends StatelessWidget {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: auth.isLoading ? null : () async {
+                // 1. Lakukan proses await
                 await context.read<AuthProvider>().login(_email.text, _pass.text);
+                
+                // 2. TAMBAHKAN BARIS INI UNTUK KEAMANAN
+                if (!context.mounted) return;
+                
+                // 3. Baru gunakan context lagi untuk mengecek status dan pindah halaman
                 final status = context.read<AuthProvider>().status;
-                if (status == AuthStatus.authenticated) Navigator.pushReplacementNamed(context, '/dashboard');
-                if (status == AuthStatus.emailNotVerified) Navigator.pushReplacementNamed(context, '/verify');
+                if (status == AuthStatus.authenticated) {
+                  Navigator.pushReplacementNamed(context, '/dashboard');
+                } else if (status == AuthStatus.emailNotVerified) {
+                  Navigator.pushReplacementNamed(context, '/verify');
+                }
               },
               child: auth.isLoading ? const CircularProgressIndicator() : const Text('Login'),
             ),
