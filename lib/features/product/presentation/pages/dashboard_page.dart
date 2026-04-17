@@ -24,10 +24,10 @@ class _DashboardPageState extends State<DashboardPage> {
     final productState = context.watch<ProductProvider>();
 
     return Scaffold(
-      backgroundColor: Colors.grey[50], // Background yang lebih clean
+      backgroundColor: Colors.grey[50],
       body: CustomScrollView(
         slivers: [
-          // Header Keren (SliverAppBar)
+          // ── Header (SliverAppBar) ──────────────────────────────────
           SliverAppBar(
             expandedHeight: 220.0,
             floating: false,
@@ -41,7 +41,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   context.read<AuthProvider>().logout();
                   Navigator.pushReplacementNamed(context, '/login');
                 },
-              )
+              ),
             ],
             flexibleSpace: FlexibleSpaceBar(
               title: const Text(
@@ -58,8 +58,11 @@ class _DashboardPageState extends State<DashboardPage> {
                 fit: StackFit.expand,
                 children: [
                   Image.network(
-                    'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&q=80&w=1200', // Foto Sepeda Gunung
+                    'https://images.unsplash.com/photo-1511994298241-608e28f14fde?auto=format&fit=crop&q=80&w=1200',
                     fit: BoxFit.cover,
+                    errorBuilder: (ctx, err, stack) => Container(
+                      color: Colors.blue[900],
+                    ),
                   ),
                   const DecoratedBox(
                     decoration: BoxDecoration(
@@ -76,7 +79,7 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
           ),
 
-          // Teks Judul
+          // ── Judul Explore ──────────────────────────────────────────
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 25, 20, 10),
@@ -97,7 +100,7 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
           ),
 
-          // Handling Status Loading / Error
+          // ── Handling Status Loading / Error ────────────────────────
           if (productState.status == ProductStatus.loading)
             const SliverFillRemaining(
               hasScrollBody: false,
@@ -119,23 +122,26 @@ class _DashboardPageState extends State<DashboardPage> {
               child: Center(child: Text('Belum ada sepeda tersedia.')),
             )
           else
-            // Grid Katalog
+            // ── Grid Katalog ─────────────────────────────────────────
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               sliver: SliverGrid(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  childAspectRatio: 0.85, // Diubah menjadi 0.85 agar card tidak terlalu tinggi & tanpa space kosong
+                  childAspectRatio: 0.75,
                   crossAxisSpacing: 14,
                   mainAxisSpacing: 14,
                 ),
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
                     final product = productState.products[index];
+                    final isLowStock = product.stock > 0 && product.stock <= 5;
+                    final isOutOfStock = product.stock == 0;
+
                     return Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(16), // Melengkung lebih proporsional
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: Colors.grey.withOpacity(0.1)),
                         boxShadow: [
                           BoxShadow(
@@ -150,63 +156,134 @@ class _DashboardPageState extends State<DashboardPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            // 1. Gambar Sepeda (Flex 4 agar dominan & proporsional)
+                            // 1. Gambar Sepeda
+                            Expanded(
+                              flex: 5,
+                              child: Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  _buildProductImage(product.imageUrl, index),
+                                  // Badge stok habis
+                                  if (isOutOfStock)
+                                    Container(
+                                      color: Colors.black.withOpacity(0.5),
+                                      child: const Center(
+                                        child: Text(
+                                          'HABIS',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w900,
+                                            fontSize: 14,
+                                            letterSpacing: 1.5,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  // Label kategori di pojok atas
+                                  if (product.category.isNotEmpty)
+                                    Positioned(
+                                      top: 8,
+                                      left: 8,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                        decoration: BoxDecoration(
+                                          color: Colors.blue[900]!.withOpacity(0.85),
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: Text(
+                                          product.category,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w700,
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+
+                            // 2. Info produk
                             Expanded(
                               flex: 4,
-                              child: product.imageUrl.isNotEmpty
-                                  ? Image.network(
-                                      product.imageUrl,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (context, err, stack) => _buildPlaceholder(),
-                                    )
-                                  : _buildPlaceholder(),
-                            ),
-                            
-                            // 2. Deskripsi dan Harga (Flex 3 agar pas)
-                            Expanded(
-                              flex: 3,
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    // Nama Produk
+                                    // Nama produk
                                     Text(
                                       product.name,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(
-                                        fontSize: 13,
+                                        fontSize: 12,
                                         fontWeight: FontWeight.w800,
-                                        height: 1.2,
+                                        height: 1.3,
                                         color: Colors.black87,
                                       ),
                                     ),
-                                    // Harga & Cart icon
+
+                                    // Stok
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.inventory_2_outlined,
+                                          size: 11,
+                                          color: isOutOfStock
+                                              ? Colors.red
+                                              : isLowStock
+                                                  ? Colors.orange
+                                                  : Colors.green[700],
+                                        ),
+                                        const SizedBox(width: 3),
+                                        Text(
+                                          isOutOfStock
+                                              ? 'Stok habis'
+                                              : 'Stok: ${product.stock}',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: isOutOfStock
+                                                ? Colors.red
+                                                : isLowStock
+                                                    ? Colors.orange
+                                                    : Colors.green[700],
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+
+                                    // Harga & icon cart
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text(
-                                          'Rp ${(product.price / 1000).toStringAsFixed(0)}k', // Disingkat agar Rapi, misal Rp 7500k
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w900,
-                                            color: Colors.blue[800],
+                                        Flexible(
+                                          child: Text(
+                                            'Rp ${_formatPrice(product.price)}',
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w900,
+                                              color: Colors.blue[800],
+                                            ),
                                           ),
                                         ),
                                         Container(
                                           padding: const EdgeInsets.all(5),
                                           decoration: BoxDecoration(
-                                            color: Colors.blue[50],
+                                            color: isOutOfStock ? Colors.grey[200] : Colors.blue[50],
                                             borderRadius: BorderRadius.circular(6),
                                           ),
                                           child: Icon(
                                             Icons.add_shopping_cart,
-                                            color: Colors.blue[900],
+                                            color: isOutOfStock ? Colors.grey : Colors.blue[900],
                                             size: 14,
                                           ),
-                                        )
+                                        ),
                                       ],
                                     ),
                                   ],
@@ -228,10 +305,49 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildPlaceholder() {
-    return Container(
-      color: Colors.grey[100],
-      child: const Icon(Icons.pedal_bike, size: 30, color: Colors.grey),
+  /// Format harga: >= 1jt → "1,5jt", < 1jt → "750rb"
+  String _formatPrice(double price) {
+    if (price >= 1000000) {
+      final juta = price / 1000000;
+      return juta == juta.roundToDouble()
+          ? '${juta.toInt()}jt'
+          : '${juta.toStringAsFixed(1)}jt';
+    } else {
+      return '${(price / 1000).toStringAsFixed(0)}rb';
+    }
+  }
+
+  Widget _buildProductImage(String imageUrl, int index) {
+    if (imageUrl.isEmpty) {
+      return _buildPlaceholder(index);
+    }
+
+    String finalUrl = imageUrl;
+    if (!imageUrl.startsWith('http')) {
+      finalUrl = 'http://192.168.0.105:8080${imageUrl.startsWith('/') ? imageUrl : '/$imageUrl'}';
+    }
+
+    return Image.network(
+      finalUrl,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) => _buildPlaceholder(index),
+    );
+  }
+
+  Widget _buildPlaceholder(int index) {
+    final fallbackImages = [
+      'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&q=80&w=400',
+      'https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?auto=format&fit=crop&q=80&w=400',
+      'https://images.unsplash.com/photo-1262601715426-bacfa951edba?auto=format&fit=crop&q=80&w=400',
+      'https://images.unsplash.com/photo-1507035895480-2b3156c31fc4?auto=format&fit=crop&q=80&w=400',
+    ];
+    return Image.network(
+      fallbackImages[index % fallbackImages.length],
+      fit: BoxFit.cover,
+      errorBuilder: (context, err, stack) => Container(
+        color: Colors.grey[200],
+        child: const Icon(Icons.pedal_bike, size: 30, color: Colors.grey),
+      ),
     );
   }
 }
