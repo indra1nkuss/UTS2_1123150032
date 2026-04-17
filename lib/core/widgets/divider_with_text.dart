@@ -1,34 +1,43 @@
 import 'package:flutter/material.dart';
-import '../constants/app_colors.dart';
 
 class DividerWithText extends StatelessWidget {
   final String text;
+  final double? thickness;
 
   const DividerWithText({
     super.key,
-    this.text = 'ATAU',
+    required this.text,
+    this.thickness,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 24),
-      child: Row(
-        children: [
-          const Expanded(child: Divider(color: AppColors.divider)),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              text,
-              style: const TextStyle(
-                color: AppColors.textHint,
-                fontWeight: FontWeight.w500,
-              ),
+    return Row(
+      children: [
+        Expanded(
+          child: Divider(
+            thickness: thickness ?? 1,
+            color: Colors.grey.shade300,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            text,
+            style: TextStyle(
+              color: Colors.grey.shade500,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
             ),
           ),
-          const Expanded(child: Divider(color: AppColors.divider)),
-        ],
-      ),
+        ),
+        Expanded(
+          child: Divider(
+            thickness: thickness ?? 1,
+            color: Colors.grey.shade300,
+          ),
+        ),
+      ],
     );
   }
 }
