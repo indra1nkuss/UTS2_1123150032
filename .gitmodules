@@ -1,0 +1,3 @@
+[submodule "backend"]
+	path = backend
+	url = https://github.com/indra1nkuss/week4_catalog_inkus.git

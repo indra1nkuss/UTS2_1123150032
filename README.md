@@ -319,14 +319,3 @@ Buka App
      [dashboard_page.dart] → fetch /products → tampilkan katalog sepeda
 ```
 
----
-
-## 👤 Informasi Mahasiswa
-
-| | |
-|---|---|
-| **Nama** | Indra Nikusuma |
-| **NIM** | 1123150032 |
-| **Mata Kuliah** | Mobile Lanjutan |
-| **Tugas** | UTS — Semester 5 |
-| **Teknologi** | Flutter + Firebase Auth + Golang Backend |
