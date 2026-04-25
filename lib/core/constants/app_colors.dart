@@ -31,4 +31,20 @@ class AppColors {
   
   // Google Brand Color
   static const Color googleRed = Color(0xFFDB4437);
+  
+  // --- Dark Theme Palette ---
+  
+  // Background & Surface Dark
+  static const Color backgroundDark = Color(0xFF121212);
+  static const Color surfaceDark = Color(0xFF1E1E1E);
+  static const Color cardBackgroundDark = Color(0xFF1E1E1E);
+  
+  // Text Colors Dark
+  static const Color textPrimaryDark = Color(0xFFE0E0E0);
+  static const Color textSecondaryDark = Color(0xFFAAAAAA);
+  static const Color textHintDark = Color(0xFF757575);
+  
+  // Utility Dark
+  static const Color dividerDark = Color(0xFF333333);
+  static const Color borderDark = Color(0xFF333333);
 }

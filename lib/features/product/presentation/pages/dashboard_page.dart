@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../../core/providers/theme_provider.dart';
 import '../providers/product_provider.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -30,10 +31,58 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
+  void _showAccountDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final user = context.read<AuthProvider>().currentUser;
+        return AlertDialog(
+          title: const Text('Akun'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (user != null) ...[
+                Text('Email: ${user.email}'),
+                const SizedBox(height: 16),
+              ],
+              Consumer<ThemeProvider>(
+                builder: (context, provider, child) {
+                  return SwitchListTile(
+                    title: const Text('Dark Mode'),
+                    value: provider.isDarkMode,
+                    onChanged: (value) {
+                      provider.toggleTheme(value);
+                    },
+                  );
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Tutup'),
+            ),
+            TextButton(
+              onPressed: () {
+                context.read<AuthProvider>().logout();
+                Navigator.pushReplacementNamed(context, '/login');
+              },
+              child: const Text('Logout', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final productState = context.watch<ProductProvider>();
     final authState = context.watch<AuthProvider>();
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
 
     // Jika baru saja authenticated dan belum fetch, fetch sekarang
     if (authState.status == AuthStatus.authenticated && !_hasFetched) {
@@ -41,7 +90,7 @@ class _DashboardPageState extends State<DashboardPage> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F4FF),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: CustomScrollView(
         slivers: [
           // ─── Header ────────────────────────────────────────────────
@@ -49,14 +98,13 @@ class _DashboardPageState extends State<DashboardPage> {
             expandedHeight: 240.0,
             floating: false,
             pinned: true,
-            backgroundColor: const Color(0xFF0D47A1),
+            backgroundColor: colorScheme.primary,
             elevation: 0,
             actions: [
               IconButton(
-                icon: const Icon(Icons.logout_rounded, color: Colors.white),
+                icon: const Icon(Icons.account_circle, color: Colors.white),
                 onPressed: () {
-                  context.read<AuthProvider>().logout();
-                  Navigator.pushReplacementNamed(context, '/login');
+                  _showAccountDialog(context);
                 },
               ),
             ],
@@ -94,18 +142,21 @@ class _DashboardPageState extends State<DashboardPage> {
                     'https://images.unsplash.com/photo-1511994298241-608e28f14fde?auto=format&fit=crop&q=80&w=1200',
                     fit: BoxFit.cover,
                     loadingBuilder: (ctx, child, p) =>
-                        p == null ? child : Container(color: const Color(0xFF0D47A1)),
+                        p == null ? child : Container(color: colorScheme.primary),
                     errorBuilder: (ctx, e, st) =>
-                        Container(color: const Color(0xFF0D47A1)),
+                        Container(color: colorScheme.primary),
                   ),
                   // gradient dari atas transparan → bawah gelap
                   Container(
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [Color(0x330D47A1), Color(0xEE0D47A1)],
-                        stops: [0.0, 1.0],
+                        colors: [
+                          colorScheme.primary.withValues(alpha: 0.2),
+                          colorScheme.primary.withValues(alpha: 0.9),
+                        ],
+                        stops: const [0.0, 1.0],
                       ),
                     ),
                   ),
@@ -121,12 +172,12 @@ class _DashboardPageState extends State<DashboardPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Katalog Sepeda',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFF0D2060),
+                      color: isDark ? Colors.white : const Color(0xFF0D2060),
                     ),
                   ),
                   if (productState.status == ProductStatus.loaded)
@@ -134,7 +185,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0D47A1),
+                        color: colorScheme.primary,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
@@ -153,15 +204,15 @@ class _DashboardPageState extends State<DashboardPage> {
 
           // ─── State: loading / error / empty / grid ──────────────────
           if (productState.status == ProductStatus.loading)
-            const SliverFillRemaining(
+            SliverFillRemaining(
               hasScrollBody: false,
               child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    CircularProgressIndicator(color: Color(0xFF0D47A1)),
-                    SizedBox(height: 14),
-                    Text('Memuat katalog...',
+                    CircularProgressIndicator(color: colorScheme.primary),
+                    const SizedBox(height: 14),
+                    const Text('Memuat katalog...',
                         style: TextStyle(color: Colors.grey)),
                   ],
                 ),
@@ -255,15 +306,19 @@ class _BikeCard extends StatelessWidget {
     final bool outOfStock = product.stock == 0;
     final bool lowStock = product.stock > 0 && product.stock <= 5;
 
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(18),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x1A0D47A1),
+            color: isDark ? Colors.black26 : const Color(0x1A0D47A1),
             blurRadius: 16,
-            offset: Offset(0, 6),
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -327,7 +382,7 @@ class _BikeCard extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: const Color(0xDD0D47A1),
+                        color: colorScheme.primary.withValues(alpha: 0.85),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -373,10 +428,10 @@ class _BikeCard extends StatelessWidget {
                     product.name,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFF0D2060),
+                      color: isDark ? Colors.white : const Color(0xFF0D2060),
                       height: 1.25,
                     ),
                   ),
@@ -441,8 +496,8 @@ class _BikeCard extends StatelessWidget {
                         height: 32,
                         decoration: BoxDecoration(
                           color: outOfStock
-                              ? const Color(0xFFF0F0F0)
-                              : const Color(0xFF0D47A1),
+                              ? (isDark ? Colors.grey[800] : const Color(0xFFF0F0F0))
+                              : colorScheme.primary,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Icon(

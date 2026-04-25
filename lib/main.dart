@@ -7,6 +7,7 @@ import 'core/theme/app_theme.dart';
 import 'firebase_options.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
 import 'features/product/presentation/providers/product_provider.dart';
+import 'core/providers/theme_provider.dart';
 
 // Pages
 import 'features/auth/presentation/pages/login_page.dart';
@@ -23,6 +24,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ProductProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
       child: const MyApp(),
     ),
@@ -34,9 +36,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return MaterialApp(
       title: 'Catalog Inkus',
-      theme: AppTheme.light, // Dari file core/theme
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: themeProvider.themeMode,
       debugShowCheckedModeBanner: false,
       initialRoute: '/login', 
       routes: {
