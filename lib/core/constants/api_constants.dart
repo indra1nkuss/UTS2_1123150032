@@ -3,7 +3,7 @@ class ApiConstants {
   // Untuk Android Emulator: 10.0.2.2
   // Untuk iOS Simulator: localhost
   // Untuk Device: IP Local network (192.168.x.x)
-  static const String baseUrl = 'http://172.20.10.13:8080/v1';
+  static const String baseUrl = 'http://192.168.1.13:8080/v1';
   
   // Auth Endpoints (sesuai kontrak backend Go)
   static const String verifyToken = '/auth/verify-token';
